@@ -1,5 +1,5 @@
 === WP Term Order ===
-Contributors: johnjamesjacoby, stuttter
+Contributors: johnjamesjacoby, stuttter, mcaskill, benhuson
 Tags: taxonomy, term, order
 Requires at least: 4.3
 Tested up to: 4.9
@@ -56,7 +56,7 @@ The WordPress support forums: https://wordpress.org/support/plugin/wp-term-order
 
 = Where can I find documentation? =
 
-http://github.com/stuttter/wp-term-order/
+http://github.com/mcaskill/wp-term-order/
 
 == Changelog ==
 

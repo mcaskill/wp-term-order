@@ -1,7 +1,7 @@
 {
-  "name": "stuttter/wp-term-order",
+  "name": "mcaskill/wp-term-order",
   "description": "Sort taxonomy terms, your way",
-  "homepage": "https://github.com/stuttter/wp-term-order",
+  "homepage": "https://github.com/mcaskill/wp-term-order",
   "type": "wordpress-plugin",
     "branch-alias": {
         "dev-master": "0.1.x-dev"
@@ -15,6 +15,10 @@
     {
       "name": "John James Jacoby",
       "email": "johnjamesjacoby@me.com"
+    },
+    {
+      "name": "Chauncey McAskill",
+      "email": "chauncey@mcaskill.ca"
     }
   ]
 }
