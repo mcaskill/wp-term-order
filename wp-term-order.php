@@ -107,6 +107,9 @@ final class WP_Term_Order {
 		// Ajax actions
 		add_action( 'wp_ajax_reordering_terms', array( $this, 'ajax_reordering_terms' ) );
 
+		// Customize REST API
+		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
+
 		// Only blog admin screens
 		if ( is_blog_admin() || doing_action( 'wp_ajax_inline_save_tax' ) ) {
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
@@ -373,12 +376,13 @@ final class WP_Term_Order {
 	 * @param  string  $taxonomy
 	 * @param  int     $order
 	 * @param  bool    $clean_cache
+	 * @return bool
 	 */
 	public static function set_term_order( $term_id = 0, $taxonomy = '', $order = 0, $clean_cache = false ) {
 		global $wpdb;
 
 		// Update the database row
-		$wpdb->update(
+		$retval = (bool) $wpdb->update(
 			$wpdb->term_taxonomy,
 			array(
 				'order' => $order
@@ -389,12 +393,18 @@ final class WP_Term_Order {
 			)
 		);
 
+		if ( ! $retval ) {
+			return false;
+		}
+
 		do_action( 'wp_term_order_set_term_order', $term_id, $taxonomy, $order );
 
 		// Maybe clean the term cache
 		if ( true === $clean_cache ) {
 			clean_term_cache( $term_id, $taxonomy );
 		}
+
+		return $retval;
 	}
 
 	/**
@@ -766,6 +776,42 @@ final class WP_Term_Order {
 		$return_data->new_pos = $new_pos;
 
 		die( json_encode( $return_data ) );
+	}
+
+	/** REST API **************************************************************/
+
+	/**
+	 * REST API hooks
+	 *
+	 * @since 0.1.5
+	 */
+	public function rest_api_init() {
+
+		// Check for DB update
+		register_rest_field( $this->taxonomies, 'order', array(
+			'get_callback'    => function ( $term_arr ) {
+				$order = $this->get_term_order( $term_arr['term_id'] );
+	            return (int) $order;
+	        },
+			'update_callback' => function( $order, $term_obj ) {
+				$ret = self::set_term_order( $term_obj->term_id, $term_obj->taxonomy, $order );
+
+	            if ( false === $ret ) {
+	                return new WP_Error(
+	                  'rest_term_order_failed',
+	                  __( 'Failed to update term order.' ),
+	                  array( 'status' => 500 )
+	                );
+	            }
+
+	            return true;
+	        },
+			'schema'          => array(
+				'description' => __( 'The order of the object in relation to other object of its type.' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+			),
+		) );
 	}
 }
 endif;
