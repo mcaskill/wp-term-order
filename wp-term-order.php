@@ -277,7 +277,7 @@ final class WP_Term_Order {
 
 		// Parse arguments
 		$r = wp_parse_args( $args, array(
-			'show_ui' => true
+			'show_ui' => true,
 		) );
 
 		// Get & return the taxonomies
@@ -385,11 +385,11 @@ final class WP_Term_Order {
 		$retval = (bool) $wpdb->update(
 			$wpdb->term_taxonomy,
 			array(
-				'order' => $order
+				'order' => $order,
 			),
 			array(
 				'term_id'  => $term_id,
-				'taxonomy' => $taxonomy
+				'taxonomy' => $taxonomy,
 			)
 		);
 
@@ -684,7 +684,7 @@ final class WP_Term_Order {
 			'orderby'    => 'order',
 			'order'      => 'ASC',
 			'hide_empty' => false,
-			'exclude'    => $excluded
+			'exclude'    => $excluded,
 		) );
 
 		// Loop through siblings and update terms
@@ -734,7 +734,7 @@ final class WP_Term_Order {
 				$new_pos[ $term->term_id ] = array(
 					'order'  => $start,
 					'parent' => $parent_id,
-					'depth'  => count( $ancestors )
+					'depth'  => count( $ancestors ),
 				);
 
 				$start++;
@@ -749,7 +749,7 @@ final class WP_Term_Order {
 				'nextid'   => $nextid,
 				'start'    => $start,
 				'excluded' => array_merge( array_keys( $new_pos ), $excluded ),
-				'taxonomy' => $taxonomy
+				'taxonomy' => $taxonomy,
 			);
 		} else {
 			$return_data->next = false;
@@ -765,7 +765,7 @@ final class WP_Term_Order {
 				'order'      => 'ASC',
 				'parent'     => $term->term_id,
 				'fields'     => 'ids',
-				'hide_empty' => false
+				'hide_empty' => false,
 			) );
 
 			if ( ! empty( $children ) ) {
