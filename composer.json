@@ -3,6 +3,9 @@
   "description": "Sort taxonomy terms, your way",
   "homepage": "https://github.com/stuttter/wp-term-order",
   "type": "wordpress-plugin",
+    "branch-alias": {
+        "dev-master": "0.1.x-dev"
+    },
   "require": {
     "php": ">=5.2",
     "composer/installers": "^1.0"
