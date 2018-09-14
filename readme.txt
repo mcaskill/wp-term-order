@@ -3,8 +3,8 @@ Contributors: johnjamesjacoby, stuttter, mcaskill, benhuson
 Tags: taxonomy, term, order
 Requires at least: 4.3
 Tested up to: 4.9
-Stable tag: 0.1.5
-License: GPLv2 or later
+Stable tag: 0.1.6
+License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=9Q4F4EL5YJ62J
 
@@ -59,6 +59,12 @@ The WordPress support forums: https://wordpress.org/support/plugin/wp-term-order
 http://github.com/mcaskill/wp-term-order/
 
 == Changelog ==
+
+= 0.1.6 =
+* Add .editorconfig
+* Fix and cleanup composer.json
+* Cleanup coding style of codebase
+* Decouple PHP class from bootstrap file
 
 = 0.1.5 =
 * Add support for REST API
