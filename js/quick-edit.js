@@ -1,7 +1,8 @@
-jQuery( document ).ready( function( $ ) {
-    $( '.editinline' ).on( 'click', function() {
+jQuery( document ).ready( function ( $ ) {
+    $( '#the-list' ).on( 'click', 'a.editinline', function () {
         var tag_id = $( this ).parents( 'tr' ).attr( 'id' ),
-            order  = $( 'td.order', '#' + tag_id ).text();
+            scope  = '#' + tag_id,
+            order  = $( 'td.order', scope ).text();
 
         $( ':input[name="order"]', '.inline-edit-row' ).val( order );
     } );
