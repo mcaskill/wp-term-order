@@ -1,5 +1,12 @@
 /* global inlineEditTax, ajaxurl */
 
+/**
+ * @summary Contains logic for sorting terms.
+ *
+ * @since 0.1.0
+ *
+ * @requires jQuery
+ */
 (function( $ ) {
     var $table   = $( '.wp-list-table tbody' ),
         taxonomy = $( 'form input[name="taxonomy"]' ).val();

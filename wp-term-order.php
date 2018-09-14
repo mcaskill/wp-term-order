@@ -15,9 +15,13 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Include the required files & dependencies
+ * Include the required files & dependencies.
  *
  * @since 0.1.6
+ *
+ * @listens WP#action:plugins_loaded
+ *
+ * @return void
  */
 function _wp_term_order_load()
 {
@@ -31,9 +35,13 @@ function _wp_term_order_load()
 add_action( 'plugins_loaded', '_wp_term_order_load' );
 
 /**
- * Instantiate the main WordPress Term Order class
+ * Instantiate the main WordPress Term Order class.
  *
  * @since 0.1.0
+ *
+ * @listens WP#action:init
+ *
+ * @return void
  */
 function _wp_term_order_init()
 {

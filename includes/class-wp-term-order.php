@@ -71,6 +71,9 @@ final class WP_Term_Order
      *
      * @since 0.1.0
      *
+     * @fires action:wp_term_meta_order_init
+     * @fires filter:wp_fancy_term_order
+     *
      * @param string $file The plugin file.
      */
     public function __construct( $file = __FILE__ )
@@ -83,7 +86,7 @@ final class WP_Term_Order
         $this->fancy    = apply_filters( 'wp_fancy_term_order', true );
 
         // Queries
-        add_filter( 'get_terms_orderby', array( $this, 'get_terms_orderby' ), 10, 2 );
+        add_filter( 'get_terms_orderby', array( $this, 'get_terms_orderby' ), 10, 3 );
         add_action( 'create_term',       array( $this, 'add_term_order'    ), 10, 3 );
         add_action( 'edit_term',         array( $this, 'add_term_order'    ), 10, 3 );
 
@@ -91,16 +94,16 @@ final class WP_Term_Order
         $this->taxonomies = $this->get_taxonomies();
 
         // Always hook these in, for ajax actions
-        foreach ( $this->taxonomies as $value ) {
+        foreach ( $this->taxonomies as $taxonomy ) {
             // Unfancy gets the column
             if ( false === $this->fancy ) {
-                add_filter( "manage_edit-{$value}_columns",          array( $this, 'add_column_header' ) );
-                add_filter( "manage_{$value}_custom_column",         array( $this, 'add_column_value' ), 10, 3 );
-                add_filter( "manage_edit-{$value}_sortable_columns", array( $this, 'sortable_columns' ) );
+                add_filter( "manage_edit-{$taxonomy}_columns",          array( $this, 'add_column_header' ) );
+                add_filter( "manage_{$taxonomy}_custom_column",         array( $this, 'add_column_value'  ), 10, 3 );
+                add_filter( "manage_edit-{$taxonomy}_sortable_columns", array( $this, 'sortable_columns'  ) );
             }
 
-            add_action( "{$value}_add_form_fields",  array( $this, 'term_order_add_form_field'  ) );
-            add_action( "{$value}_edit_form_fields", array( $this, 'term_order_edit_form_field' ) );
+            add_action( "{$taxonomy}_add_form_fields",  array( $this, 'term_order_add_form_field'  ), 10, 0 );
+            add_action( "{$taxonomy}_edit_form_fields", array( $this, 'term_order_edit_form_field' ), 10, 1 );
         }
 
         // Ajax actions
@@ -124,9 +127,13 @@ final class WP_Term_Order
     }
 
     /**
-     * Administration area hooks
+     * Administration area hooks.
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:admin_init
+     *
+     * @return void
      */
     public function admin_init()
     {
@@ -135,9 +142,13 @@ final class WP_Term_Order
     }
 
     /**
-     * Administration area hooks
+     * Administration area hooks.
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:load-{$page_hook}
+     *
+     * @return void
      */
     public function edit_tags()
     {
@@ -152,11 +163,14 @@ final class WP_Term_Order
     /**
      * Whether a taxonomy object supports ordering.
      *
+     * If multiple taxonomies are supplied then the method will return TRUE only if all of them are supported.
+     * Evaluation goes from first to last and stops as soon as an unsupported taxonomy is encountered.
+     *
      * @since 0.1.5
      *
-     * @param string|array $taxonomy
+     * @param string|array $taxonomy String of taxonomy name or array of string values of taxonomy names.
      *
-     * @return bool
+     * @return bool Whether the taxonomy is sortable.
      */
     public function taxonomy_supported( $taxonomy )
     {
@@ -165,13 +179,18 @@ final class WP_Term_Order
                 return false;
             }
         }
+
         return true;
     }
 
     /**
-     * Enqueue quick-edit JS
+     * Enqueue quick-edit JS.
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:admin_print_scripts-{$hook_suffix}
+     *
+     * @return void
      */
     public function enqueue_scripts()
     {
@@ -184,9 +203,13 @@ final class WP_Term_Order
     }
 
     /**
-     * Contexutal help tabs
+     * Add contexutal help tabs.
      *
      * @since 0.1.5
+     *
+     * @listens WP#action:admin_head-{$hook_suffix}
+     *
+     * @return void
      */
     public function help_tabs()
     {
@@ -206,6 +229,10 @@ final class WP_Term_Order
      * Align custom `order` column
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:admin_head-{$hook_suffix}
+     *
+     * @return void
      */
     public function admin_head()
     {
@@ -216,7 +243,6 @@ final class WP_Term_Order
                 text-align: center;
                 width: 74px;
             }
-
             <?php if ( true === $this->fancy ) : ?>
 
             .wp-list-table .ui-sortable tr:not(.no-items) {
@@ -263,21 +289,22 @@ final class WP_Term_Order
             .to-row-updating .check-column input {
                 visibility: hidden;
             }
-
             <?php endif; ?>
-
         </style>
 
         <?php
     }
 
     /**
-     * Return the taxonomies used by this plugin
+     * Return the taxonomies used by this plugin.
      *
      * @since 0.1.0
      *
-     * @param array $args
-     * @return array
+     * @fires filter:wp_term_order_get_taxonomies
+     *
+     * @param array $args Optional. An array of `key => value` arguments to match against the taxonomy objects.
+     *
+     * @return array A list of taxonomy names or objects.
      */
     private static function get_taxonomies( $args = array() )
     {
@@ -296,11 +323,13 @@ final class WP_Term_Order
     /** Columns ***************************************************************/
 
     /**
-     * Add the "Order" column to taxonomy terms list-tables
+     * Add the "Order" column to taxonomy terms list-tables.
      *
      * @since 0.1.0
      *
-     * @param array $columns
+     * @listens WP#filter:manage_{$screen->id}_columns
+     *
+     * @param array $columns An array of column headers.
      *
      * @return array
      */
@@ -312,13 +341,15 @@ final class WP_Term_Order
     }
 
     /**
-     * Output the value for the custom column, in our case: `order`
+     * Output the value for the custom column, in our case: `order`.
      *
      * @since 0.1.0
      *
-     * @param string $empty
-     * @param string $custom_column
-     * @param int    $term_id
+     * @listens WP#filter:manage_{$this->screen->taxonomy}_custom_column
+     *
+     * @param string $empty       Blank string.
+     * @param string $column_name Name of the column.
+     * @param int    $term_id     Term ID.
      *
      * @return mixed
      */
@@ -333,33 +364,41 @@ final class WP_Term_Order
     }
 
     /**
-     * Allow sorting by `order` order
+     * Allow sorting by `order` order.
      *
      * @since 0.1.0
      *
-     * @param array $columns
+     * @listens WP#filter:manage_{$this->screen->id}_sortable_columns
+     *
+     * @param array $columns An array of sortable columns.
      *
      * @return array
      */
     public function sortable_columns( $columns = array() )
     {
         $columns['order'] = 'order';
+
         return $columns;
     }
 
     /**
-     * Add `order` to term when updating
+     * Add `order` to term when updating.
      *
      * @since 0.1.0
      *
-     * @param  int     $term_id   The ID of the term
-     * @param  int     $tt_id     Not used
-     * @param  string  $taxonomy  Taxonomy of the term
+     * @listens WP#action:create_term
+     * @listens WP#action:edit_term
+     *
+     * @param int    $term_id  Term ID.
+     * @param int    $tt_id    Term taxonomy ID.
+     * @param string $taxonomy Taxonomy slug.
+     *
+     * @return void
      */
     public function add_term_order( $term_id, $tt_id, $taxonomy )
     {
         /*
-         * Bail if order info hasn't been POSTed, like when the "Quick Edit"
+         * Bail if order info hasn't been POST-ed, like when the "Quick Edit"
          * form is used to update a term.
          */
         if ( ! isset( $_POST['order'] ) ) {
@@ -375,16 +414,20 @@ final class WP_Term_Order
     }
 
     /**
-     * Set order of a specific term
+     * Set order of a specific term.
      *
      * @since 0.1.0
      *
-     * @global object  $wpdb
-     * @param  int     $term_id
-     * @param  string  $taxonomy
-     * @param  int     $order
-     * @param  bool    $clean_cache
-     * @return bool
+     * @global \wpdb $wpdb The WordPress database abstraction object.
+     *
+     * @fires action:wp_term_order_set_term_order
+     *
+     * @param int     $term_id     Term ID.
+     * @param string  $taxonomy    Taxonomy slug.
+     * @param int     $order       Term order.
+     * @param bool    $clean_cache Whether to clear the cached term.
+     *
+     * @return bool Whether the term was updated.
      */
     public static function set_term_order( $term_id = 0, $taxonomy = '', $order = 0, $clean_cache = false )
     {
@@ -406,6 +449,15 @@ final class WP_Term_Order
             return false;
         }
 
+        /**
+         * Fires immediately after the term order is updated, but before the term cache is cleaned.
+         *
+         * @since 0.1.5
+         *
+         * @param int    $term_id  Term ID.
+         * @param string $taxonomy Taxonomy slug.
+         * @param int    $order    Term order.
+         */
         do_action( 'wp_term_order_set_term_order', $term_id, $taxonomy, $order );
 
         // Maybe clean the term cache
@@ -417,11 +469,13 @@ final class WP_Term_Order
     }
 
     /**
-     * Return the order of a term
+     * Return the order of a term.
      *
      * @since 0.1.0
      *
-     * @param int $term_id
+     * @param int $term_id The term ID.
+     *
+     * @return int
      */
     public function get_term_order( $term_id = 0 )
     {
@@ -457,9 +511,13 @@ final class WP_Term_Order
     /** Markup ****************************************************************/
 
     /**
-     * Output the "order" form field when adding a new term
+     * Output the "order" form field when adding a new term.
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:{$taxonomy}_add_form_fields
+     *
+     * @return void
      */
     public static function term_order_add_form_field()
     {
@@ -479,11 +537,15 @@ final class WP_Term_Order
     }
 
     /**
-     * Output the "order" form field when editing an existing term
+     * Output the "order" form field when editing an existing term.
      *
      * @since 0.1.0
      *
-     * @param object $term
+     * @listens WP#action:{$taxonomy}_edit_form_fields
+     *
+     * @param object $term Current taxonomy term object.
+     *
+     * @return void
      */
     public function term_order_edit_form_field( $term = false )
     {
@@ -507,18 +569,26 @@ final class WP_Term_Order
     }
 
     /**
-     * Output the "order" quick-edit field
+     * Output the "order" quick-edit field.
      *
      * @since 0.1.0
      *
-     * @param  $term
+     * @listens WP#action:quick_edit_custom_box This action is fired in wp-admin/includes/class-wp-terms-list-table.php
+     *
+     * @param string $column_name Name of the column to edit.
+     * @param string $screen      The current screen name.
+     * @param string taxonomy     The taxonomy name, if any.
+     *
+     * @return void
      */
-    public function quick_edit_term_order( $column_name = '', $screen = '', $name = '' )
+    public function quick_edit_term_order( $column_name = '', $screen = '', $taxonomy = '' )
     {
         // Bail if not the `order` column on the `edit-tags` screen for a visible taxonomy
-        if ( ( 'order' !== $column_name ) || ( 'edit-tags' !== $screen ) || ! in_array( $name, $this->taxonomies, true ) ) {
+        if ( ( 'order' !== $column_name ) || ( 'edit-tags' !== $screen ) || ! in_array( $taxonomy, $this->taxonomies, true ) ) {
             return false;
-        } ?>
+        }
+
+        ?>
 
         <fieldset>
             <div class="inline-edit-col">
@@ -537,16 +607,21 @@ final class WP_Term_Order
     /** Query Filters *********************************************************/
 
     /**
-     * Force `orderby` to `tt.order` if not explicitly set to something else
+     * Force `orderby` to `tt.order` if not explicitly set to something else.
      *
      * @since 0.1.0
      *
-     * @param  string $orderby
+     * @listens WP#filter:get_terms_orderby
+     *
+     * @param string $orderby    `ORDERBY` clause of the terms query.
+     * @param array  $args       An array of terms query arguments.
+     * @param array  $taxonomies An array of taxonomies.
+     *
      * @return string
      */
-    public function get_terms_orderby( $orderby = 'name', $args = array() )
+    public function get_terms_orderby( $orderby = 'name', $args = array(), $taxonomies = array() )
     {
-        if ( ! $this->taxonomy_supported( $args['taxonomy'] ) ) {
+        if ( ! $this->taxonomy_supported( $taxonomies ) ) {
             return $orderby;
         }
 
@@ -562,18 +637,19 @@ final class WP_Term_Order
             $orderby = 'tt.order, t.name';
         }
 
-        // Return possibly modified `orderby` value
         return $orderby;
     }
 
     /** Database Alters *******************************************************/
 
     /**
-     * Should a database update occur
+     * Should a database update occur.
+     *
+     * Runs on 'admin_init'.
      *
      * @since 0.1.0
      *
-     * Runs on `init`
+     * @return void
      */
     private function maybe_upgrade_database()
     {
@@ -587,13 +663,15 @@ final class WP_Term_Order
     }
 
     /**
-     * Modify the `term_taxonomy` table and add an `order` column to it
+     * Modify the `term_taxonomy` table and add an `order` column to it.
      *
      * @since 0.1.0
      *
-     * @param  int    $old_version
+     * @global \wpdb $wpdb The WordPress database abstraction object.
      *
-     * @global object $wpdb
+     * @param int $old_version The old database version number.
+     *
+     * @return void
      */
     private function upgrade_database( $old_version = 0 )
     {
@@ -618,6 +696,10 @@ final class WP_Term_Order
      * This bit is inspired by the Simple Page Ordering plugin from 10up
      *
      * @since 0.1.0
+     *
+     * @listens WP#action:wp_ajax_{$action} This action is documented in wp-admin/admin-ajax.php
+     *
+     * @return void
      */
     public static function ajax_reordering_terms()
     {
@@ -793,6 +875,10 @@ final class WP_Term_Order
      * REST API hooks
      *
      * @since 0.1.5
+     *
+     * @listens WP#action:rest_api_init
+     *
+     * @return void
      */
     public function rest_api_init()
     {
