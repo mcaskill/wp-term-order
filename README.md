@@ -30,18 +30,18 @@ Yes. Use it like:
 
 ```
 $terms = get_terms( array(
-	'taxonomy'   => 'category',
-	'depth'      => 1,
-	'number'     => 100,
-	'parent'     => 0,
-	'orderby'    => 'order', // <--- Looky looky!
-	'order'      => 'ASC',
-	'hide_empty' => false,
+    'taxonomy'   => 'category',
+    'depth'      => 1,
+    'number'     => 100,
+    'parent'     => 0,
+    'orderby'    => 'order', // <--- Looky looky!
+    'order'      => 'ASC',
+    'hide_empty' => false,
 
-	// Try the "wp-term-meta" plugin!
-	'meta_query' => array( array(
-		'key' => 'term_thumbnail'
-	) )
+    // Try the "wp-term-meta" plugin!
+    'meta_query' => array( array(
+        'key' => 'term_thumbnail'
+    ) )
 ) );
 ```
 

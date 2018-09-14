@@ -20,11 +20,11 @@ defined( 'ABSPATH' ) || exit;
  * @since 0.1.6
  */
 function _wp_term_order_load() {
-	// Setup the main file
-	$plugin_path = plugin_dir_path( __FILE__ );
+    // Setup the main file
+    $plugin_path = plugin_dir_path( __FILE__ );
 
-	// Classes
-	require_once $plugin_path . 'includes/class-wp-term-order.php';
+    // Classes
+    require_once $plugin_path . 'includes/class-wp-term-order.php';
 }
 add_action( 'plugins_loaded', '_wp_term_order_load' );
 
@@ -34,6 +34,6 @@ add_action( 'plugins_loaded', '_wp_term_order_load' );
  * @since 0.1.0
  */
 function _wp_term_order_init() {
-	new WP_Term_Order( __FILE__ );
+    new WP_Term_Order( __FILE__ );
 }
 add_action( 'init', '_wp_term_order_init', 99 );
