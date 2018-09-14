@@ -1,24 +1,25 @@
 {
-  "name": "mcaskill/wp-term-order",
-  "description": "Sort taxonomy terms, your way",
-  "homepage": "https://github.com/mcaskill/wp-term-order",
-  "type": "wordpress-plugin",
-    "branch-alias": {
-        "dev-master": "0.1.x-dev"
+    "type": "wordpress-plugin",
+    "name": "mcaskill/wp-term-order",
+    "description": "Sort taxonomy terms, your way",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "John James Jacoby",
+            "email": "johnjamesjacoby@me.com"
+        },
+        {
+            "name": "Chauncey McAskill",
+            "email": "chauncey@mcaskill.ca"
+        }
+    ],
+    "require": {
+        "php": ">=5.2",
+        "composer/installers": "^1.5"
     },
-  "require": {
-    "php": ">=5.2",
-    "composer/installers": "^1.0"
-  },
-  "license": "GPL-2.0-or-later",
-  "authors": [
-    {
-      "name": "John James Jacoby",
-      "email": "johnjamesjacoby@me.com"
-    },
-    {
-      "name": "Chauncey McAskill",
-      "email": "chauncey@mcaskill.ca"
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
     }
-  ]
 }
