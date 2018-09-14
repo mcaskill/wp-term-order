@@ -65,6 +65,7 @@ http://github.com/mcaskill/wp-term-order/
 * Fix and cleanup composer.json
 * Cleanup coding style of codebase
 * Decouple PHP class from bootstrap file
+* Fix "order" field in REST API
 
 = 0.1.5 =
 * Add support for REST API

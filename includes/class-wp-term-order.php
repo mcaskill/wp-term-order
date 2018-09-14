@@ -103,7 +103,7 @@ final class WP_Term_Order
             }
 
             add_action( "{$taxonomy}_add_form_fields",  array( $this, 'term_order_add_form_field'  ), 10, 0 );
-            add_action( "{$taxonomy}_edit_form_fields", array( $this, 'term_order_edit_form_field' ), 10, 1 );
+            add_action( "{$taxonomy}_edit_form_fields", array( $this, 'term_order_edit_form_field' ), 10, 2 );
         }
 
         // Ajax actions
@@ -360,7 +360,7 @@ final class WP_Term_Order
             return $empty;
         }
 
-        return $this->get_term_order( $term_id );
+        return $this->get_term_order( $term_id, $_REQUEST['taxonomy'] );
     }
 
     /**
@@ -472,15 +472,17 @@ final class WP_Term_Order
      * Return the order of a term.
      *
      * @since 0.1.0
+     * @since 0.1.6 The `$taxonomy` parameter was added.
      *
-     * @param int $term_id The term ID.
+     * @param int    $term_id  The term ID.
+     * @param string $taxonomy Optional. Taxonomy name that $term_id is part of.
      *
      * @return int
      */
-    public function get_term_order( $term_id = 0 )
+    public function get_term_order( $term_id = 0, $taxonomy = '' )
     {
         // Get the term, probably from cache at this point
-        $term = get_term( $term_id, $_REQUEST['taxonomy'] );
+        $term = get_term( $term_id, $taxonomy );
 
         // Assume default order
         $order = 0;
@@ -540,14 +542,16 @@ final class WP_Term_Order
      * Output the "order" form field when editing an existing term.
      *
      * @since 0.1.0
+     * @since 0.1.6 The `$taxonomy` parameter was added.
      *
      * @listens WP#action:{$taxonomy}_edit_form_fields
      *
-     * @param object $term Current taxonomy term object.
+     * @param object $tag      Current taxonomy term object.
+     * @param string $taxonomy Current taxonomy slug.
      *
      * @return void
      */
-    public function term_order_edit_form_field( $term = false )
+    public function term_order_edit_form_field( $term, $taxonomy )
     {
         ?>
 
@@ -558,7 +562,7 @@ final class WP_Term_Order
                 </label>
             </th>
             <td>
-                <input name="order" id="order" type="text" value="<?php echo $this->get_term_order( $term ); ?>" size="11" />
+                <input name="order" id="order" type="text" value="<?php echo $this->get_term_order( $term, $taxonomy ); ?>" size="11" />
                 <p class="description">
                     <?php esc_html_e( 'Terms are usually ordered alphabetically, but you can choose your own order by entering a number (1 for first, etc.) in this field.', 'wp-term-order' ); ?>
                 </p>
@@ -885,7 +889,7 @@ final class WP_Term_Order
         // Check for DB update
         register_rest_field( $this->taxonomies, 'order', array(
             'get_callback'    => function ( $term_arr ) {
-                $order = $this->get_term_order( $term_arr['term_id'] );
+                $order = $this->get_term_order( $term_arr['id'], $term_arr['taxonomy'] );
                 return $order;
             },
             'update_callback' => function ( $order, $term_obj ) {
