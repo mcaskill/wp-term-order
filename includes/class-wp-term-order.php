@@ -34,7 +34,7 @@ final class WP_Term_Order
     /**
      * @var string Database version
      */
-    public $db_version_key = 'wpdb_term_taxonomy_version';
+    public $db_version_key = 'wtm_term_order_version';
 
     /**
      * @var string File for plugin
@@ -127,7 +127,7 @@ final class WP_Term_Order
     }
 
     /**
-     * Administration area hooks.
+     * Fires as an admin screen or script is being initialized.
      *
      * @since 0.1.0
      *
@@ -142,7 +142,7 @@ final class WP_Term_Order
     }
 
     /**
-     * Administration area hooks.
+     * Edit tags administration screen.
      *
      * @since 0.1.0
      *
